@@ -1,0 +1,958 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0114)https://gsps.hd-ce.com/cepcna/catalog/parts_books_search_pvw.jsp?v_search_type=PART_NO&v_search_value=130602-00850 -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GPES :: Part Number and Name Search</title>
+<meta name="Author" content="DOOSAN"> 
+<meta name="Copyright" content="2012 doosan"> 
+ 
+<meta http-equiv="Pragma" content="no-cache"> 
+<meta http-equiv="Imagetoolbar" content="no"> 
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+<!-- define css -->
+<style type="text/css">
+	html {overflow:hidden;}     
+</style>
+<link rel="stylesheet" type="text/css" href="./search_result_files/common_en.css" media="all">
+<link rel="stylesheet" type="text/css" href="./search_result_files/styles.css" media="all">
+
+<script async="" src="./search_result_files/analytics.js.download"></script><script type="text/javascript" src="./search_result_files/jquery-init.js.download"></script><script src="./search_result_files/jquery-1.7.1.min.js.download"></script>
+<script src="./search_result_files/loopedslider.js.download"></script>
+<script src="./search_result_files/hoverIntent.js.download"></script>
+<script src="./search_result_files/jquery.dropdown.js.download"></script>
+
+<script type="text/javascript" src="./search_result_files/common.ui.js.download"></script>
+<script type="text/javascript" src="./search_result_files/common.js.download"></script>
+<script type="text/javascript" src="./search_result_files/jquery.blockUI.js.download"></script>
+
+<script type="text/javascript" src="./search_result_files/jquery.autocomplete.js.download"></script>
+<script type="text/javascript" src="./search_result_files/autocomplete.js.download"></script>
+
+
+<!--[if IE 6]>
+<script src="../common/js/DD_belatedPNG_0.0.8a-min.js"></script>
+<script>
+DD_belatedPNG.fix('.fix');
+</script>
+<![endif]--> 
+<script type="text/javascript">
+var w = $(window).width();
+var h = $(window).height();
+var isAutoSearch = true;
+
+var searching1 = false;
+var searching2 = false;
+
+
+$(document).ready(function(){
+	init();
+});
+
+function init() {
+	var form = document.dataForm;
+	form.search_val.focus();
+	form.session_dist_chnl.value = "20";
+	setTimeout("getIfrBody1('L')",100);
+	setTimeout("getIfrBody3('L')",100);
+	
+	window.self.focus();
+}
+
+
+//메뉴탭 이벤트 처리
+jQuery(function($){
+    
+	var param = {
+    	v_suggest_cnt: 10
+    }
+    var url = '/cepcna/common/autocomplete/model_detail_autocomplete_ajax.jsp';
+    var inputId = 'v_sales_model_nm';
+	loadAutocomplete(inputId, url, param, handleAutocomplete, changeHandle);
+	var v_pdc = "";
+	//console.log("v_pdc========"+v_pdc);
+	if (isAutoSearch){
+		btnSearch();
+		if($.trim(v_pdc).length > 0 && v_pdc != 'null'){
+			//console.log("viewing pdc in ========"+v_pdc);
+			getViewingPdc();
+		}
+	}
+});
+
+function handleAutocomplete(model, value) { 
+	// 자동완성 선택 값을 이용해서 처리할 내용이 있다면 이 함수 사용.
+	var form = document.dataForm;
+	var arrTemp;
+	var arrTemp2;
+	
+	var modelSfx		= "";
+	var plant_no 		= "";   //plant_no
+	var cuntry3_cd 		= "";   //cuntry3_cd
+	var cut_dis 		= "";   //내수/수출구분 
+	var partsbk_no 		= "";
+	
+	if (value.length > 0 && model != value) {
+		arrTemp = value.split(",");
+		arrTemp2 = $.trim(arrTemp[0]).split("|");
+		
+		//modelSfx			= $.trim(arrTemp2[0]);
+	    //plant_no			= $.trim(arrTemp[1]);
+	    //cuntry3_cd			= $.trim(arrTemp[1]);
+	    //cut_dis				= $.trim(arrTemp[2]);
+	    //partsbk_no			= $.trim(arrTemp[3]);
+	    
+		if($.trim(arrTemp[3]).length > 0){
+			modelSfx			= $.trim(arrTemp2[0]);
+			modelSfxFake	= $.trim(arrTemp[0]);
+		    plant_no			= $.trim(arrTemp[1]);
+		    cuntry3_cd			= $.trim(arrTemp[1]);
+		    cut_dis				= $.trim(arrTemp[2]);
+		    if(cut_dis == "KOREA"){
+		    	cut_dis				= "DOM";
+		    }
+		    partsbk_no			= $.trim(arrTemp[3]);
+		}else {
+			modelSfx			= $.trim(arrTemp2[0]);
+			modelSfxFake	= $.trim(arrTemp[0]);
+		    plant_no			= $.trim(arrTemp[1]);
+		    cuntry3_cd			= $.trim(arrTemp[1]);
+		    partsbk_no			= $.trim(arrTemp[2]);
+		    cut_dis  				= "20";
+		}	    
+    
+	    $("#v_model_sfx").val(modelSfx);
+	    $("#v_country_3cd").val(cuntry3_cd);
+	    $("#v_partsbk_no").val(partsbk_no);
+	    
+	    //getSearchPlantCode(modelSfx, partsbk_no, cut_dis , plant_no, cuntry3_cd );  //plant code 가져오기
+	    getViewingPdc(); //viewingPDC 가져오기
+	}
+}
+
+function changeHandle(val) {
+	var form = document.dataForm;
+	$("#v_model_sfx").val("");
+	$("#v_partsbk_no").val("");
+	form.p_viewpdc.value="";
+	form.g_viewing_pdc.options.length = 0; //지역선택 초기화
+	$("#viewPdcSpan").css("display", "none"); //지역선택 안보이게
+}
+
+
+function setModelInfo(st_name, st_cd, dis_chl, partsbk_no, plant_cd) {
+	var form = document.dataForm;
+	form.v_sales_model_nm.value = st_name; // 모델명
+	form.v_model_sfx.value 		= st_cd; // 모델 suffix
+	form.v_partsbk_no.value 	= partsbk_no; // parts book no
+	form.v_dist_channel.value 	= dis_chl; // dist channel
+	form.v_plant_cd.value 		= plant_cd; // plant cd 
+	
+	// 호기 이원화 - 해당 Parts Book의 Multi Flag 가져오기.
+	//fncGetEffectMultiAjax();
+	getViewingPdc(); //viewingPDC 가져오기
+}
+
+
+//조회유형 선택박스 선택 
+function setChange_Search_Type() {
+	var form = document.dataForm;
+	var search_type = form.search_type.value;
+	form.search_val.focus();
+}
+
+
+function showLodingBar(){
+	setTimeout(function(){
+		if (searching1 || searching2) {
+			$.blockUI({ 
+		        message: '<img alt="loading" src="/cepcna/images/common/loading.gif" >' 
+		        ,css: { 
+		             top:  (getDocHeight() - 84) /2 + 'px' 
+		            ,left: (getDocWidth() - 129) /2 + 'px'
+		            ,border:'0px'
+		            ,width: '20px'
+		            ,backgroundColor:''
+		        }
+		        ,overlayCSS: {
+		        	opacity: 0.3
+		            ,backgroundColor:'#000'
+		        } 
+		        ,fadeIn: 100
+		    });
+		}
+	},300);
+}
+
+//조회 
+function btnSearch() {
+	var form = document.dataForm;
+	var search_type = form.search_type.value;
+	var v_pdc = "";
+	
+	form.search_val.value = $.trim(form.search_val.value).toUpperCase();
+	if(v_pdc != ""){
+		form.p_viewpdc.value = v_pdc;
+	}else{
+		form.p_viewpdc.value = form.g_viewing_pdc.value;
+	}
+	//console.log("form.p_viewpdc.value========"+form.p_viewpdc.value);
+	if($.trim(form.search_val.value).length <= 0) {
+		alert("Please ! Search Key Word.");
+		form.search_val.focus();
+		return;
+	}
+
+	
+	setTimeout(function(){
+		getTotalSearch();
+		getIfrBody3('L');
+		getIfrBody1('Y');
+	}, 100);
+}
+
+//books
+function getIfrBody1(load_type) {
+	var form = document.dataForm;
+	form.sch_yn.value = load_type;   //L:onload,  Y:조회,  N:빈화면 로드 
+	if (form.v_sales_model_nm.value == "") { // 파츠북명 없을때
+		form.v_model_sfx.value = "";
+		form.v_partsbk_no.value = "";
+		form.p_viewpdc.value = "";
+	} else if (form.v_model_sfx.value == "") { // 없는 파츠북명 입력시
+		form.v_partsbk_no.value = "XXXXXX";
+	}
+
+	if (load_type=="Y") {
+		searching1 = true;
+		showLodingBar();
+	}
+
+	isAutoSearch = true; // 왼쪽 첫번째 파츠북으로 오른쪽 자동조회 
+	
+	$.ajax({
+        url: "parts_books_search_pls.jsp",
+        type: "POST",
+        data: $("#dataForm").serialize(),           //파라미터
+        /*
+        data: {
+             sch_yn			: $("#sch_yn").val()
+        	,search_type 	: $("#search_type").val()
+        	,search_val 	: $("#search_val").val()
+        },           //파라미터
+        */
+        dataType: "json",   		//서버 돌고 난 후의 자료형태
+        success: function(responseData){
+            var retMap 	= responseData.retMap;
+            var keyList = responseData.keyList;
+            //console.log("keyList===="+keyList);
+            setModelList(retMap, keyList, load_type);
+        }
+        ,error : function(xhr, textStatus) {
+        	searching1 = false;
+        	clearLodingBar();
+		}
+		,complete : function(xhr, textStatus) {
+			searching1 = false;
+		 	clearLodingBar();
+		}
+    });
+	
+}
+
+function setModelList(retMap, keyList, load_type) {
+	var form = document.dataForm;
+	var html		= "";
+	var keyValue 	= "";
+	
+	var MODEL_SFX			= "";
+	var PB_PLANT			= "";
+	var DIST_CHANNEL		= "";
+	var MDLCLSS_CD			= "";
+	var PARTSBK_NO			= "";
+	var STD_FIG_YN			= "";
+	var SALES_MODEL_NM		= "";
+	var CNTRYCD_ISO3		= "";
+	var PLANT_ID			= "";
+	var ABBR				= "";
+	var REGION				= "";
+	var SEL_REGION = form.p_viewpdc.value;
+	var SEL_USER_TYPE = "D";
+	var PARTS_BOOK_NAME 	= "";
+	
+	if( keyList ) { 
+		if ( keyList.length > 0  ) {
+			for (var i=0; i<keyList.length; i++) {
+				keyValue = keyList[i];
+			
+				html += "<dl class=\"tbl_group\">";
+				html += "	<dt><img src=\"/cepcna/images/modelclass/"+keyValue+"_s.png\" width=\"84\" height=\"84\" alt=\"Image\"></dt>";
+				html += "	<dd>";
+				html += "	<table id=\"modelList\" cellspacing=\"0\" cellpadding=\"0\" summary=\"자세히 보기입니다\" class=\"view_typ1 view_typ2\" style=\"background:url(\"../../images/sub/blk_thumb111.png\") no-repeat 50% 50%\">";
+				html += "	<colgroup>";
+				html += "		<col class=\"tw_cob2\" /><col class=\"tw_cob3\" /><col class=\"tw_cob4\" />";
+				html += "	</colgroup>";
+				html += "	<tr>";
+				html += "		<th scope=\"row\"><span>Model</span></th>";
+				if(SEL_USER_TYPE == "I"){ 
+				html += "		<th scope=\"row\"><span>Plant</span></th>";
+				html += "		<th scope=\"row\"><span>Market</span></th>";
+				  }	
+				html += "	</tr>";
+									
+				for ( var j=0; j<retMap[keyValue].length; j++ ) {
+					MODEL_SFX			= $.trim(retMap[keyValue][j].MODEL_SFX);
+					//PB_PLANT			= $.trim(retMap[keyValue][j].PB_PLANT); 25.04.29 파츠북 PLANT > 로그인 PLANT 수정
+					PB_PLANT			= 6000;
+					//DIST_CHANNEL		= $.trim(retMap[keyValue][j].DIST_CHANNEL); 25.04.29 파츠북 DIST_CHANNEL > 로그인 DIST_CHANNEL 수정
+					MDLCLSS_CD			= $.trim(retMap[keyValue][j].MDLCLSS_CD);
+					PARTSBK_NO			= $.trim(retMap[keyValue][j].PARTSBK_NO);
+					STD_FIG_YN			= $.trim(retMap[keyValue][j].STD_FIG_YN);
+					SALES_MODEL_NM		= $.trim(retMap[keyValue][j].SALES_MODEL_NM);
+					CNTRYCD_ISO3		= $.trim(retMap[keyValue][j].CNTRYCD_ISO3);
+					PLANT_ID			= $.trim(retMap[keyValue][j].PLANT_ID);
+					ABBR				= $.trim(retMap[keyValue][j].ABBR);
+					if($.trim(SEL_REGION).length > 0){
+						//console.log("SEL_REGION========"+SEL_REGION);
+						REGION				= SEL_REGION;
+						if(SEL_REGION == "KOREA"){
+							DIST_CHANNEL	= "10";							
+						}else if(SEL_REGION == "APE"){
+							DIST_CHANNEL	= "20";
+						}else if(SEL_REGION == "CHINA"){
+							DIST_CHANNEL	= "20";
+						}else if(SEL_REGION == "NA"){
+							DIST_CHANNEL	= "C1";
+						}else if(SEL_REGION == "EU"){
+							DIST_CHANNEL	= "20";
+						} else{
+							DIST_CHANNEL	= "20";
+						}
+					}else{
+						REGION				= $.trim(retMap[keyValue][j].REGION);
+						DIST_CHANNEL	= "20";
+					}
+		
+					PARTS_BOOK_NAME		= $.trim(retMap[keyValue][j].PARTS_BOOK_NAME);
+
+					var highlight = "";
+		            if (isAutoSearch){
+		            	highlight = "class=\"highlight\"";
+		            }
+					
+					html += "<tr id=\"modelListTr_"+j+"\" "+highlight+" onClick=\"gotoBookFig(this,'modelListTr_"+j+"','"+MODEL_SFX+"','"+PB_PLANT+"','"+DIST_CHANNEL+"',";
+					html += "'"+MDLCLSS_CD+"','"+PARTSBK_NO+"','"+STD_FIG_YN+"','"+SALES_MODEL_NM+"','"+CNTRYCD_ISO3+"','"+PLANT_ID+"','"+ABBR+"','"+REGION+"');\"";
+					html += " style=\"backgrund-color:#fff;cursor:pointer\" >";
+					html += "	<td><span>"+PARTS_BOOK_NAME+"</span></td>";
+					 if(SEL_USER_TYPE == "I"){				
+					html += "	<td><span>"+PLANT_ID+"</span></td>";
+					html += "	<td><span>"+ABBR+"</span></td>";
+					 }
+					html += "</tr>";
+
+		            if (isAutoSearch){
+		            	gotoBookFig(null,'modelListTr_'+j,MODEL_SFX, PB_PLANT, DIST_CHANNEL, MDLCLSS_CD, PARTSBK_NO, STD_FIG_YN, SALES_MODEL_NM, CNTRYCD_ISO3, PLANT_ID, ABBR, REGION);
+		            	isAutoSearch = false;    
+		            }
+		            					
+				} // end of for - j
+				
+				html += "	</table>";
+				html += "	</dd>";
+				html += "</dl>";
+				
+			} // end of for - i
+		} else {
+			html += "<dl class=\"tbl_group\">";
+			html += "	<dt><img src=\"../images/e.gif\" alt=\"Image\"></dt>";
+			html += "	<dd>";
+			html += "	<table id=\"modelList\" cellspacing=\"0\" cellpadding=\"0\" summary=\"자세히 보기입니다\" class=\"view_typ1 view_typ2\" style=\"background:url(\"../../images/sub/blk_thumb111.png\") no-repeat 50% 50%\">";
+			html += "	<colgroup>";
+			html += "		<col class=\"tw_cob2\" /><col class=\"tw_cob3\" /><col class=\"tw_cob4\" />";
+			html += "	</colgroup>";
+			html += "	<tr>";
+			html += "		<th scope=\"row\"><span>Model</span></th>";
+			 if(SEL_USER_TYPE == "I"){
+			html += "		<th scope=\"row\"><span>Plant</span></th>";
+			html += "		<th scope=\"row\"><span>Market</span></th>";
+			 }
+			html += "	</tr>";
+
+			if (load_type=="Y"){
+				html += "<tr>";
+				html += "	<td style='text-align:center'><span>No data found.</span></td>";
+				 if(SEL_USER_TYPE == "I"){
+				html += "	<td><span>&nbsp;</span></td>";
+				html += "	<td><span>&nbsp;</span></td>";
+				 }
+				html += "</tr>";
+			}
+			
+			for (var i=0; i<30; i++) {
+				html += "<tr>";
+				html += "	<td><span>&nbsp;</span></td>";
+				 if(SEL_USER_TYPE == "I"){
+				html += "	<td><span>&nbsp;</span></td>";
+				html += "	<td><span>&nbsp;</span></td>";
+				 }
+				html += "</tr>";
+			}
+			html += "	</table>";
+			html += "	</dd>";
+			html += "</dl>";
+		}
+	
+	} else {
+		html += "<dl class=\"tbl_group\">";
+		html += "	<dt><img src=\"../images/e.gif\" alt=\"Image\"></dt>";
+		html += "	<dd>";
+		html += "	<table id=\"modelList\" cellspacing=\"0\" cellpadding=\"0\" summary=\"자세히 보기입니다\" class=\"view_typ1 view_typ2\" style=\"background:url(\"../../images/sub/blk_thumb111.png\") no-repeat 50% 50%\">";
+		html += "	<colgroup>";
+		html += "		<col class=\"tw_cob2\" /><col class=\"tw_cob3\" /><col class=\"tw_cob4\" />";
+		html += "	</colgroup>";
+		html += "	<tr>";
+		html += "		<th scope=\"row\"><span>Model</span></th>";
+		 if(SEL_USER_TYPE == "I"){
+		html += "		<th scope=\"row\"><span>Plant</span></th>";
+		html += "		<th scope=\"row\"><span>Market</span></th>";
+		 }
+		html += "	</tr>";
+		
+		for (var i=0; i<30; i++) {
+			html += "<tr>";
+			html += "	<td><span>&nbsp;</span></td>";
+			 if(SEL_USER_TYPE == "I"){
+			html += "	<td><span>&nbsp;</span></td>";
+			html += "	<td><span>&nbsp;</span></td>";
+			 }
+			html += "</tr>";
+		}
+		html += "	</table>";
+		html += "	</dd>";
+		html += "</dl>";
+	}
+	
+	$("#modelMainList").html(html);
+	$("#modelMainList")[0].scrollTop = 0;
+}
+
+//BookFig 조회 
+function gotoBookFig(obj, trId, model_sfx,pb_plant,dist_channel,mdlclss_cd,partsbk_no,std_fig_yn, sales_model_nm, cntrycd_iso3, plant_id, addr, region){
+	var form = document.dataForm;
+	form.plant_id.value = plant_id;
+	form.addr.value = addr;
+	form.viewing_pdc.value = region;
+	var search_type = form.search_type.value;
+
+	$("#modelList tr").each(function(){ 
+        $(this).removeClass('highlight');
+    }); 
+	$(obj).addClass('highlight');
+	
+	if($.trim(form.search_val.value).length <= 0) {
+		alert("Please ! Search Key Word.");
+		form.search_val.focus();
+		return;
+	}
+
+	form.model_sfx.value 		=	model_sfx;
+	form.partsbk_no.value 		=	partsbk_no;
+	form.plant_no.value 		=	pb_plant;
+	form.dist_channel.value 	=	dist_channel;
+	form.mdlclss_cd.value 		=	mdlclss_cd;
+	form.standard_yn.value		=	std_fig_yn;
+	form.sales_model_nm.value	=	sales_model_nm;
+	form.cntrycd_iso3.value		=	cntrycd_iso3;	
+	
+	setTimeout(function(){
+		getIfrBody3('Y');
+	}, 100);
+}
+
+function getViewingPdc(){		
+
+	var form = document.dataForm;	
+	var v_partsbk_no = form.v_partsbk_no.value;
+
+	if(v_partsbk_no == null || v_partsbk_no == "") return;
+
+	form.g_viewing_pdc.options.length = 0; //셀렉트박스 초기화
+	
+	$.ajax({
+        url: "/cepcna/catalog/section_information_viewing_pdc.jsp",
+        type: "POST",
+        data: {
+        	v_partsbk_no	: v_partsbk_no
+        },           //파라미터
+        dataType: "json",   		//서버 돌고 난 후의 자료형태
+        success: function(responseData){        	
+        	//console.log(responseData);
+        	if(responseData.INTEGRATED == "Y") {
+        		fncGlobalGetViewPdcComboCompleted(responseData);        		
+        	}
+        }
+        ,error : function(xhr, textStatus) {
+        	console.log("error==========");
+		}
+		,complete : function(xhr, textStatus) {
+			//INTEGRATED가 Y일경우 지역코드를 가지고 넘어가야하기 때문에 여기서 메뉴 호출 
+			getIfrBody3('Y');
+		}
+		
+    });  
+}
+
+//Combo Box에 Add Option
+function fncAddOption(object, code, name) {
+	var opt = new Option(name, code);
+	object.add(opt);
+}
+
+//Viewing PDC
+function fncGlobalGetViewPdcComboCompleted(oXmlHttpRequest){
+	var form = document.dataForm;	
+	var oValue = oXmlHttpRequest.REGION;
+	var oData = oXmlHttpRequest.RESULT;
+	var object = form.g_viewing_pdc;
+	var v_pdc = "";
+
+	object.options.length = 0;
+	//fncAddOption(object, "", "- ALL -");
+	
+	if(oData != null && oData != ""){
+		var row = oData.split("||");
+		for(var i=0; i<row.length; i++){				
+			fncAddOption(object, row[i], row[i]);		
+		}
+		//console.log("fncGlobalGetViewPdcComboCompleted=====");
+		if($.trim(v_pdc).length > 0 && v_pdc != 'null'){
+			$("#g_viewing_pdc").val(v_pdc).prop("selected", true); //popup 넘어온 pdc
+		}else{
+			$("#g_viewing_pdc").val(oValue).prop("selected", true); //사용자 세션으로 지역 선택
+		}		
+	}
+	
+	$("#viewPdcSpan").css("display", "inline-block"); //라인때문에 inline-block	
+}
+
+function  getViewingPdcChange(){
+	getIfrBody3('Y');
+}
+
+//fig
+function getIfrBody2(load_type) {  // 사용안함!
+	var form = document.dataForm;
+	form.sch_yn.value = load_type;  //L:onload,  Y:조회,  N:빈화면 로드 
+	form.method = "post";
+	form.target = "ifrBody2";
+	form.action = "parts_books_search_fig_pls.jsp";
+	form.submit();
+}
+	
+//key no
+function getIfrBody3(load_type) {	
+	if (load_type=="Y") {
+		searching2 = true;
+		showLodingBar();
+	}
+	var form = document.dataForm;
+	form.sch_yn.value = load_type;  //L:onload,  Y:조회,  N:빈화면 로드 
+	form.method = "post";
+	form.target = "ifrPartList";
+	form.action = "parts_books_search_keyno_pls.jsp";
+	form.submit();
+	
+}
+
+function clearLodingBar_IfrBody3(){
+	searching2 = false;
+	clearLodingBar();
+}
+
+//top의 main 메뉴쪽에 에서 페이지 이동
+function goTopSectionInfoView(key_no,partsbk_no,plant_cd,dist_channel,largegrp_cd,fig_no,fig_sfx,fig_desc,illustfile_path,illustfile_id, bg_code, lan_cd, fig_serial, part_no, viewing_pdc) {
+	try {
+		var form = document.dataForm;
+		var plant_id = form.plant_id.value;
+		var addr = form.addr.value;
+		form.partsbk_no.value 	=	partsbk_no;
+		form.plant_no.value 	=	plant_cd;
+		form.dist_channel.value =	dist_channel;
+		form.largegrp_cd.value 	=	largegrp_cd;
+		
+		form.fig_no.value 		=	fig_no;
+		form.fig_desc.value 	=	fig_desc;
+		form.illust_path.value	=	illustfile_path;
+		form.illust_id.value	=	illustfile_id;
+		//console.log("part_no viewing pdc========="+viewing_pdc);		
+		//오픈너를 못찾으면 닫아버리기 위해 try ~ catch를 사용한다.
+		try{
+			//Top.menu 쪽 페이지 값을 넘겨
+			opener.goTopSectionInfoViewPopUp(key_no,partsbk_no,plant_cd,dist_channel,largegrp_cd,fig_no,fig_sfx,fig_desc,illustfile_path,illustfile_id, bg_code, lan_cd, fig_serial, plant_id, addr, part_no, viewing_pdc, "DL");
+			
+		}catch ( e ) {
+			window.close();
+		}
+	}catch ( e ) {
+		//alert(e);
+	}
+	
+}
+	
+function clearLodingBar() {
+	if (!searching1 && !searching2) {
+		// 로딩바 지움.
+		$.unblockUI();
+	}
+}
+
+
+// Total Search
+function getTotalSearch() {
+	var form = document.dataForm; 
+	
+	$.ajax({
+        url: "parts_books_search_total_pls.jsp",
+        type: "POST",
+        data: $("#dataForm").serialize(),           //파라미터
+        dataType: "json",   						//서버 돌고 난 후의 자료형태
+        success: function(responseData){
+        	$.each(responseData, function(key, val) {
+				//GPART_YN, IMAGE_YN, REPL_YN, KIT_YN, TWP_YN, BULL_YN, SM_OIL, SM_SPAPA
+				//alert(val.GPART_YN + "\n" + val.IMAGE_YN + "\n" + val.REPL_YN + "\n" + val.KIT_YN + "\n" + val.TWP_YN + "\n" + val.BULL_YN + "\n" + val.SM_OIL + "\n" + val.SM_SPAPA);
+				
+				// MEMO 추가
+				//var valueArr    = "GPART_YN#&#"+val.GPART_YN+"|IMAGE_YN#&#"+val.IMAGE_YN+"|REPL_YN#&#"+val.REPL_YN+"|KIT_YN#&#"+val.KIT_YN+"|TWP_YN#&#"+val.TWP_YN+"|BULL_YN#&#"+val.BULL_YN+"|SM_YN#&#"+val.SUBSIDE_TYPE+"|MEMO_YN#&#"+val.MEMO_YN;
+				
+				//PMEMO_YN 추가 2017/03/28
+				var valueArr    = "GPART_YN#&#"+val.GPART_YN+"|IMAGE_YN#&#"+val.IMAGE_YN+"|REPL_YN#&#"+val.REPL_YN+"|KIT_YN#&#"+val.KIT_YN+"|TWP_YN#&#"
+				                       +val.TWP_YN+"|BULL_YN#&#"+val.BULL_YN+"|SM_YN#&#"+val.SUBSIDE_TYPE+"|MEMO_YN#&#"+val.MEMO_YN+"|PMEMO_YN#&#"+val.PMEMO_YN;
+				fncTotalSearchImage(valueArr);
+				
+			});
+        }
+        ,error : function(xhr, textStatus) {
+        	//clearLodingBar();
+		}
+		,complete : function(xhr, textStatus) {
+		 	//clearLodingBar();
+		}
+    });
+	
+}
+
+function fncTotalSearchImage(valueArr){
+	var row = valueArr.split("|");
+	for(var inx = 0; inx < row.length; inx++) {
+		var entry 	 = row[inx].split("#&#");
+		var id 		 = entry[0];
+		var flag 	 = entry[1];
+		var idName 	 = "#"+entry[0];
+		var className= "."+entry[0];
+		
+		if(id != "SM_YN" && flag == "Y"){
+			$(idName).attr({src:"/cepcna/images/sub/ico_inpop.gif", style:"cursor:pointer;vertical-align:middle" });
+			$(className).attr({style:"cursor:pointer;vertical-align:middle",onClick:"goTotalSearchPage('"+id+"')" });
+			$(className).css({'color':'#189EB6','font-weight':'bold'});
+		}else if(id == "SM_YN" && flag != "N" && flag != ""){
+			$(idName).attr({src:"/cepcna/images/sub/ico_inpop.gif",style:"cursor:pointer;vertical-align:middle" });
+			$(className).attr({style:"cursor:pointer;vertical-align:middle",onClick:"goTotalSearchPage('SM_YN','"+flag+"')" });
+			$(className).css({'color':'#189EB6','font-weight':'bold'});
+		}else{
+			$(idName).attr({src:"/cepcna/images/sub/ico_inpop_gray.gif",style:"vertical-align:middle",onClick:"" });
+			$(className).attr({style:"vertical-align:middle",onClick:"" });
+			$(className).css({'color':'#666','font-weight':'normal'});
+		}
+	}
+}
+
+function goTotalSearchPage(flag, tabId){
+	var form    = document.dataForm; 
+	var part_no = form.search_val.value;
+	
+	if(flag == "GPART_YN" || flag == "REPL_YN" || flag == "PMEMO_YN"){ // 2017.03.28 PMEMO_YN 추가
+		openDefaultWindow('/cepcna/info/parts_info_vw.jsp?part_no='+part_no+'&type=B','996','632','E021010_TS');
+	}else if(flag == "IMAGE_YN"){
+		fn_getImageSizePopup(part_no);
+	}else if(flag == "KIT_YN"){
+		openDefaultWindow('/cepcna/info/parts_info_vw.jsp?part_no='+part_no+'&type=K','996','632','E021010_TS');
+	}else if(flag == "TWP_YN"){
+		openDefaultWindow('/cepcna/info/parts_info_vw.jsp?part_no='+part_no+'&type=T','996','632','E021010_TS');
+	}else if(flag == "BULL_YN"){
+		//dia랑 다른 페이지로!
+		
+			window.opener.location.href = '/cepcna/info/bulletin_list_vw.jsp?strSearchVal='+part_no;
+		
+	}else if(flag == "SM_YN"){
+		if(tabId == "OIL") tabId = "O"; 
+		else if(tabId == "SPAPA") tabId = "S";
+		else if(tabId == "ST") tabId = "ST";  
+		//dia랑 다른 페이지로!
+		window.opener.location.href = '/cepcna/info/subside_material_vw.jsp?part_no='+part_no+'&type='+tabId;
+	}
+	// 2015.05.21 Parts Note로 가는 것도 추가
+	/* 2024.04.18 김경호 책임 요청으로 삭제
+	else if( flag == "MEMO_YN"){
+		openDefaultWindow('/cepcna/info/parts_info_vw.jsp?type=N&part_no='+ part_no , 996, 632, 'E021010');
+	}
+	*/
+}
+
+/**
+ * Date		: 08.26.2011
+ * Desc		: 이미지 사이즈를 가져와서 이미지 크기에 맞게 팝업 호출
+ *
+ */
+function fn_getImageSizePopup(picPartNo) {
+	$.ajax({
+        url: "../catalog/parts_picture_file_info.jsp",
+        type: "POST",
+        data: {"picPartNo": picPartNo},       //파라미터
+        dataType: "json",   		//서버 돌고 난 후의 자료형태
+        success: function(info){
+			fn_getImageSizePopupCompleted(picPartNo,info);
+        }
+        ,error : function(xhr, textStatus) {
+		}
+		,complete : function(xhr, textStatus) {
+			
+		}
+    });
+}
+
+/**
+ * Date		: 08.26.2011
+ * Desc		: 이미지 사이즈 CallBack 함수, 팝업 호출
+ *
+ */
+function fn_getImageSizePopupCompleted(partNo, info) {
+	var constWidth = 570;
+	var constHeight = 580;
+	 
+	if(info.FILE_NAME > "") {
+		var width = info.WIDTH*1;
+		var height = info.HEIGHT*1;
+		
+		if (width>constWidth){
+			height = ""+((height * constHeight) / width);
+		}
+	
+		if(height=="" || height=="0"){
+			height="500";
+		}
+		
+		fn_goImagePopup(partNo, height);
+	} else {
+		alert('Not found image...');
+		return;
+	}
+	
+}
+
+/** 
+ * Date		: 
+ * Desc		: 팝업호출
+ */
+function fn_goImagePopup(picPartNo, picHeight) {
+	var form = document.dataForm;
+
+	var width  	= 580;
+	var height  = parseInt(picHeight) + 50 + 42;
+	var left 	= (screen.availWidth - width)*.5;
+	var top		= (screen.availHeight - height)*.5;
+	
+	var url = "../catalog/parts_picture_pvw.jsp?srtPart_No="+picPartNo+"&picWidth="+width+"&picHeight="+picHeight;
+	var ImagePopup = window.open(url, "PhotoPop", "left="+left+",top="+top+",width="+width+", height="+height+", scrollbars=no, menubar=no, toolbar=no, status=no, resizable=no, location=no");
+	ImagePopup.focus();
+}
+	
+
+// Total Search - Style
+$(function(){
+$('#totalSearchDiv table tr td').css('padding-left','5px');
+$('#totalSearchDiv table tr#first td').css('border-bottom','1px dotted #ccc');
+$('#totalSearchDiv table tr#first td#firstTD').css({'border':'none'});
+$('#totalSearchDiv table tr td').css('border-right','1px dotted #ccc');
+$('#totalSearchDiv table tr td#lastTD').css('border-right','none');
+
+$('#totalSearchDiv table tr#first td#firstTD').css('padding-left','0px');
+$('#totalSearchDiv table tr td img').css({'vertical-align':'middle'});
+});
+
+</script>
+</head>
+<body class="popup">
+
+<!-- CE Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45363961-1', 'doosaninfracore.com');
+  ga('send', 'pageview');
+
+</script>
+
+<dl id="accessibility">
+	<dt><strong class="hc">바로가기 메뉴</strong></dt>
+	<dd><a href="https://gsps.hd-ce.com/cepcna/catalog/parts_books_search_pvw.jsp?v_search_type=PART_NO&amp;v_search_value=130602-00850#chest" class="accessibility">메인메뉴 바로가기</a></dd>
+</dl>
+<!-- //skip navi -->
+<div id="container" class="container_pop_w1">
+	<!-- header -->
+	<div id="header" class="header_pop">
+		<h2>Part Number and Name Search</h2>
+	</div>
+	<!-- //header -->
+	<!-- chest -->
+	<div id="chest">
+	<div class="container">
+		<div class="section_wide">
+			<div class="floor_sch">
+			<form id="dataForm" name="dataForm" method="post" target="ifrPartList" action="https://gsps.hd-ce.com/cepcna/catalog/parts_books_search_keyno_pls.jsp">
+			<input type="hidden" id="sch_yn" name="sch_yn" value="Y"><!-- 섹션 그룹리스트 조회 구분  -->
+			<input type="hidden" id="model_sfx" name="model_sfx" value="CWLBO"><!-- model_sfx  -->
+			<input type="hidden" id="partsbk_no" name="partsbk_no" value="950106-00921EF"><!-- 파츠북  -->
+			<input type="hidden" id="standard_yn" name="standard_yn" value="N"><!-- Standard FIG 여부   -->
+			<input type="hidden" id="plant_no" name="plant_no" value="6000"><!-- 조회시 plant 코드 사용   -->
+			<input type="hidden" id="dist_channel" name="dist_channel" value="20"><!-- 조회시 plant 코드 사용   -->
+			<input type="hidden" id="mdlclss_cd" name="mdlclss_cd" value=""><!-- 조회시 mdlclss 코드 사용   -->
+			<input type="hidden" id="largegrp_cd" name="largegrp_cd" value=""><!-- 조회시 대그룹코드 사용   -->
+			<input type="hidden" id="sales_model_nm" name="sales_model_nm" value="DL550"><!-- 조회시 model name 사용   -->
+			<input type="hidden" id="cntrycd_iso3" name="cntrycd_iso3" value="KOR"><!-- 조회시 국가3코드 사용   -->
+			<input type="hidden" id="plant_id" name="plant_id" value="HDI">
+			<input type="hidden" id="addr" name="addr" value="EXP">
+			
+			<input type="hidden" id="session_dist_chnl" name="session_dist_chnl" value="20">
+			<input type="hidden" id="viewing_pdc" name="viewing_pdc" value="">
+			
+			<input type="hidden" id="p_viewpdc" name="p_viewpdc" value=""> <!-- Region 검색 시 선택 값 -->
+			
+			<input type="hidden" id="fig_no" name="fig_no" value=""><!-- 섹션정보에 넘겨주어야 할 데이타   -->
+			<input type="hidden" id="fig_desc" name="fig_desc" value=""><!-- 섹션정보에 넘겨주어야 할 데이타   -->
+			<input type="hidden" id="illust_path" name="illust_path" value=""><!-- 섹션정보에 FIG path 넘겨주어야 할 데이타   -->
+			<input type="hidden" id="illust_id" name="illust_id" value=""><!-- 섹션정보에FIG 파일명  넘겨주어야 할 데이타   -->
+				<fieldset class="sh1">
+					<legend class="hc">통합검색</legend>
+					<div class="shw1 mr1">
+						<span style="display: inline-block;"> </span>
+						<select class="srch srch1" id="search_type" name="search_type" onchange="setChange_Search_Type()">
+							<option value="PartsNO" selected="">Part No.</option>
+			            	<option value="PartsNM">Part Name</option>
+			            	<option value="Desc">Fig. Description</option>
+						</select>						
+						<span class="itw iw41" style="width:25%">
+							<input type="text" id="search_val" name="search_val" class="it" title="name" value="130602-00850" onkeypress="javascript:if(13==event.keyCode) { btnSearch();}">
+						</span>
+						<span class="nam"> Model</span>
+						<span class="itw sauto1" style="width:25%">
+							<input type="text" id="v_sales_model_nm" name="v_sales_model_nm" class="it" title="name" value="" onkeypress="javascript:if(13==event.keyCode) { btnSearch();}" autocomplete="off"><a href="https://gsps.hd-ce.com/cepcna/catalog/parts_books_search_pvw.jsp?v_search_type=PART_NO&amp;v_search_value=130602-00850#" id="autocompleteButtonv_sales_model_nm" class="autocomplete-clrt" style="display:block;" onclick="autocompleteObj.v_sales_model_nm.toggleControlFromBtn(event);"><span class="autocomplete-hc">자동완성펼침</span></a>
+						</span>
+						<span class="itw" style="width:10%">
+							<input type="text" id="v_model_sfx" name="v_model_sfx" class="it" title="name" value="" onkeypress="javascript:if(13==event.keyCode) { btnSearch();}">
+							<input type="hidden" id="v_country_3cd" name="v_country_3cd">
+							<input type="hidden" id="v_partsbk_no" name="v_partsbk_no" value="">
+							<input type="hidden" id="v_dist_channel" name="v_dist_channel">
+							<input type="hidden" id="v_plant_cd" name="v_plant_cd">
+						</span>
+						<span class="itw" style="display: none;" id="viewPdcSpan"><!--Viewing PDC-->
+							<select id="g_viewing_pdc" name="g_viewing_pdc" class="box5" style="width:150;margin-left:5px;font-family: Tahoma;font-size:10pt; background-color: #f0f0f0" onchange="getViewingPdcChange();">
+								<option value="">- ALL -</option>
+							</select>
+						</span>
+						<a href="javascript:fncModelListPop('setModelInfo');" class="bt_mdl"><span>Model</span></a>
+						<a href="javascript:btnSearch();" id="mainSearch" class="sbt3"><span>Search</span></a>
+					</div>					
+				</fieldset>
+			</form>
+			</div>
+			<!-- Total Search Start 2013.06.28 -->			
+			<div id="totalSearchDiv">
+				<table width="100%" height="60" border="0" cellspacing="0" cellpadding="0">
+					<tbody><tr>
+						<td width="78px" rowspan="2" id="firstTD" align="center" style="padding-left: 5px; border-right: 1px dotted rgb(204, 204, 204);"><b>Total<br>Search</b></td> 
+						<td style="padding-left: 5px; border-right: 1px dotted rgb(204, 204, 204);">
+							<table width="100%" height="30" border="0" cellspacing="0" cellpadding="0">
+								<tbody><tr id="first">
+									<td width="18%" style="padding-left: 5px; border-bottom: 1px dotted rgb(204, 204, 204); border-right: 1px dotted rgb(204, 204, 204);"><span class="GPART_YN" style="cursor: pointer; vertical-align: middle; color: rgb(24, 158, 182); font-weight: bold;" onclick="goTotalSearchPage('GPART_YN')"> Basic Information 		&nbsp;<img id="GPART_YN" src="./search_result_files/ico_inpop.gif" style="cursor:pointer;vertical-align:middle"></span></td>
+									<td width="22%" style="padding-left: 5px; border-bottom: 1px dotted rgb(204, 204, 204); border-right: 1px dotted rgb(204, 204, 204);"><span class="REPL_YN" style="vertical-align: middle; color: rgb(102, 102, 102); font-weight: normal;" onclick=""> Replacing Part No Inquiry 	&nbsp;<img id="REPL_YN" src="./search_result_files/ico_inpop_gray.gif" style="vertical-align:middle" onclick=""></span></td>
+									<td width="22%" style="padding-left: 5px; border-bottom: 1px dotted rgb(204, 204, 204); border-right: 1px dotted rgb(204, 204, 204);"><span class="KIT_YN" style="vertical-align: middle; color: rgb(102, 102, 102); font-weight: normal;" onclick=""> Kit Components Inquiry 	&nbsp;<img id="KIT_YN" src="./search_result_files/ico_inpop_gray.gif" style="vertical-align:middle" onclick=""></span></td>
+									<td width="*" id="lastTD" style="padding-left: 5px; border-bottom: 1px dotted rgb(204, 204, 204); border-right-width: medium; border-right-style: none; border-right-color: currentcolor;"><span class="TWP_YN" style="vertical-align: middle; color: rgb(102, 102, 102); font-weight: normal;" onclick=""> Together With Parts List &nbsp;<img id="TWP_YN" src="./search_result_files/ico_inpop_gray.gif" style="vertical-align:middle" onclick=""></span></td>
+								</tr>
+							</tbody></table>
+							<table width="100%" height="30" border="0" cellspacing="0" cellpadding="0">
+								<tbody><tr>
+									<!--  <td  width="18%" ><span class="PMEMO_YN"> Part Memo 				&nbsp;<img id="PMEMO_YN" src="/cepcna/images/sub/ico_inpop_gray.gif" /></span></td> -->
+									<td width="22%" style="padding-left: 5px; border-right: 1px dotted rgb(204, 204, 204);"><span class="IMAGE_YN" style="vertical-align: middle; color: rgb(102, 102, 102); font-weight: normal;" onclick=""> Parts Image 			&nbsp;<img id="IMAGE_YN" src="./search_result_files/ico_inpop_gray.gif" style="vertical-align:middle" onclick=""></span></td>
+									<td width="22%" style="padding-left: 5px; border-right: 1px dotted rgb(204, 204, 204);"><span class="BULL_YN" style="vertical-align: middle; color: rgb(102, 102, 102); font-weight: normal;" onclick=""> Parts Bulletin 			&nbsp;<img id="BULL_YN" src="./search_result_files/ico_inpop_gray.gif" style="vertical-align:middle" onclick=""></span></td>
+									<td width="20%" style="padding-left: 5px; border-right: 1px dotted rgb(204, 204, 204);"><span class="SM_YN" style="vertical-align: middle; color: rgb(102, 102, 102); font-weight: normal;" onclick=""> Subsidiary Material Parts 						&nbsp;<img id="SM_YN" src="./search_result_files/ico_inpop_gray.gif" style="vertical-align:middle" onclick=""></span></td>
+									<td width="*" id="lastTD" style="padding-left: 5px; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;"><span class="MEMO_YN" style="vertical-align: middle; color: rgb(102, 102, 102); font-weight: normal;" onclick=""> My Parts Note &nbsp;<img id="MEMO_YN" src="./search_result_files/ico_inpop_gray.gif" style="vertical-align:middle" onclick=""></span></td>
+									 <!-- 2017/03/28 MyPNote PartMemo  PMEMO_YN추가-->
+								</tr>
+							</tbody></table>
+						</td>
+					</tr>
+				</tbody></table>
+			</div>
+			<!-- Total Search End   2013.06.28 -->
+			<div class="section_wrap wrap_h" style="height:480px;">
+				<!-- section_left_pop -->
+				<div class="section_left_pop">
+
+
+					<!-- ttype1 -->
+					<div class="type_list">
+						<div id="modelMainList" class="type_list_box" style="height:480px;"><dl class="tbl_group">	<dt><img src="./search_result_files/C2000_s.png" width="84" height="84" alt="Image"></dt>	<dd>	<table id="modelList" cellspacing="0" cellpadding="0" summary="자세히 보기입니다" class="view_typ1 view_typ2" style="background:url(" ..="" images="" sub="" blk_thumb111.png")="" no-repeat="" 50%="" 50%"="">	<colgroup>		<col class="tw_cob2"><col class="tw_cob3"><col class="tw_cob4">	</colgroup>	<tbody><tr>		<th scope="row"><span>Model</span></th>	</tr><tr id="modelListTr_0" class="highlight" onclick="gotoBookFig(this,'modelListTr_0','CWLBO','6000','20','','950106-00921EF','N','DL550','KOR','HDI','EXP','');" style="backgrund-color:#fff;cursor:pointer">	<td><span>DL550</span></td></tr><tr id="modelListTr_1" onclick="gotoBookFig(this,'modelListTr_1','CWLAQ','6000','20','','950106-00432EF','N','DL550-3(T4i)','KOR','HDI','EXP','');" style="backgrund-color:#fff;cursor:pointer">	<td><span>DL550-3(T4i)</span></td></tr><tr id="modelListTr_2" onclick="gotoBookFig(this,'modelListTr_2','CWLBL','6000','20','','950106-01908EF','N','DL550-5 BH / DL580-5(S/N:10001~10138)','KOR','HDI','EXP','');" style="backgrund-color:#fff;cursor:pointer">	<td><span>DL550-5 BH / DL580-5(S/N:10001~10138)</span></td></tr><tr id="modelListTr_3" onclick="gotoBookFig(this,'modelListTr_3','CWLBL','6000','20','','950106-01244EF','N','DL550-5(S/N:10001~10138)','KOR','HDI','EXP','');" style="backgrund-color:#fff;cursor:pointer">	<td><span>DL550-5(S/N:10001~10138)</span></td></tr><tr id="modelListTr_4" onclick="gotoBookFig(this,'modelListTr_4','CWLBL','6000','20','','950106-01244AEF','N','DL550-5/DL550-5 BH/DL580-5(S/N:10139~)','KOR','HDI','EXP','');" style="backgrund-color:#fff;cursor:pointer">	<td><span>DL550-5/DL550-5 BH/DL580-5(S/N:10139~)</span></td></tr><tr id="modelListTr_5" onclick="gotoBookFig(this,'modelListTr_5','CWLBL','6000','20','','950106-01244LH','N','DL550-5/DL550-5 LH/DL580-5 T2/T3','KOR','HDI','EXP','');" style="backgrund-color:#fff;cursor:pointer">	<td><span>DL550-5/DL550-5 LH/DL580-5 T2/T3</span></td></tr><tr id="modelListTr_6" onclick="gotoBookFig(this,'modelListTr_6','CWLDU','6000','20','','950106-02289EF','N','DL550-7','KOR','HDI','EXP','');" style="backgrund-color:#fff;cursor:pointer">	<td><span>DL550-7</span></td></tr><tr id="modelListTr_7" onclick="gotoBookFig(this,'modelListTr_7','CWLDW','6000','20','','950106-02290EF','N','DL580-7','KOR','HDI','EXP','');" style="backgrund-color:#fff;cursor:pointer">	<td><span>DL580-7</span></td></tr>	</tbody></table>	</dd></dl><dl class="tbl_group">	<dt><img src="./search_result_files/C5000_s.png" width="84" height="84" alt="Image"></dt>	<dd>	<table id="modelList" cellspacing="0" cellpadding="0" summary="자세히 보기입니다" class="view_typ1 view_typ2" style="background:url(" ..="" images="" sub="" blk_thumb111.png")="" no-repeat="" 50%="" 50%"="">	<colgroup>		<col class="tw_cob2"><col class="tw_cob3"><col class="tw_cob4">	</colgroup>	<tbody><tr>		<th scope="row"><span>Model</span></th>	</tr><tr id="modelListTr_0" onclick="gotoBookFig(this,'modelListTr_0','CTDAA','6000','20','','950106-03911','N','DA45D','KOR','HDI','EXP','APE');" style="backgrund-color:#fff;cursor:pointer">	<td><span>DA45D</span></td></tr>	</tbody></table>	</dd></dl></div>
+					</div>			
+					<!-- //ttype1 -->
+
+
+
+
+
+				</div>
+				<!-- //section_left_pop -->
+
+				<!-- section_right_pop -->
+				<div class="section_right_pop">
+				<iframe id="ifrPartList" name="ifrPartList" style="width:518px;overflow-x:hidden;" height="480" marginheight="0" src="./search_result_files/saved_resource.html" frameborder="0" width="518" marginwidth="0" scrolling="auto"></iframe>	 <!-- 519 -->
+				</div>
+				<!-- //section_right_pop -->
+
+
+
+				<!-- //section_right_pop -->
+			</div>
+			
+			
+		</div>
+
+	</div>
+	</div>
+	<!-- //chest -->
+<hr>
+	<!-- footer -->
+		<form id="dataFotterForm" name="dataFotterForm" method="post">
+	
+	</form>
+	
+	<!-- ï¿½ï¿½ï¿½ï¿½Çªï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	<div id="footer">
+		<div class="fooer_section">
+			<strong class="copyright"><span class="hc">COPYRIGHT 2012 BY HD HYUNDAI INFRACORE. ALL RIGHT RESERVED.</span></strong>
+			<!-- <a href="#" class="download" onclick="fncInstallPop(); return false;"><span class="hc">Djvu Viewer download and Install</span></a> 
+		</div>
+	</div --> 
+	
+	
+<div class="footer_new">
+   <div class="footer_new_box">
+      <img src="./search_result_files/new_copy_logo.png" alt="logo">
+      <p>(C) 2026 HD CONSTRUCTION EQUIPMENT</p>
+   </div>
+</div>
+	<!-- //footer -->
+</div>
+
+<div id="AutocompleteContainter_aa9ea" class="autocomplete-atcp" style="top: 51.8px; left: 424.975px; z-index: 9999;"><div class="autocomplete-atcpw"><div class="autocomplete-atcpw2"><h3 id="AutocompleteContainter_aa9ea_words" style="width: 209px;">&nbsp;WORDS<a href="https://gsps.hd-ce.com/cepcna/catalog/parts_books_search_pvw.jsp?v_search_type=PART_NO&amp;v_search_value=130602-00850#" id="autocompleteStatBtnv_sales_model_nm" class="btn_atcw" onclick="autocompleteObj.v_sales_model_nm.toggleStat();">off</a></h3><ul id="Autocomplete_aa9ea" style="width: 209px; max-height: 300px; overflow: visible; display: none;"></ul></div></div></div></body></html>

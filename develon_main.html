@@ -1,0 +1,878 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+<head>
+<link rel="shortcut icon" href="https://gsps.hd-ce.com/favicon.png" type="image/x-icon" />
+<title>GPES :: EPC</title>
+<meta name="Author" content="DOOSAN" /> 
+<meta name="Copyright" content="2012 doosan" /> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+<meta http-equiv="Pragma" content="no-cache" /> 
+<meta http-equiv="Imagetoolbar" content="no" /> 
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+
+<!-- define css -->
+<link rel="stylesheet" type="text/css" href="/cepcna/common/css/common_en.css" media="all" />
+<link rel="stylesheet" type="text/css" href="/cepcna/common/js/autocomplete/styles.css" media="all" />
+
+<!-- define javascript -->
+<script type="text/javascript" src="/cepcna/common/js/jquery-init.js"></script>
+<script type="text/javascript" src="/cepcna/common/js/jquery.cookie.js"></script>
+<script type="text/javascript" src="/cepcna/common/js/common.ui.js"></script>
+<script type="text/javascript" src="/cepcna/common/js/common.js"></script>
+<script type="text/javascript" src="/cepcna/common/js/autocomplete/jquery.autocomplete.js"></script>
+<script type="text/javascript" src="/cepcna/common/js/autocomplete.js"></script>
+<script type="text/javascript">
+	
+	var popNewsCount =0;
+	
+	var cookieGPESLang;
+	var cookieGPESLangDesc;	
+	
+	var inputPlaceHolder = ['',
+		'Enter the Model Name.',
+		'Enter the Part No.', 	
+		'Enter the Part Name.' 
+	];
+	
+	function setAutocompleteModelNo(){
+		// 자동완성 기능 핸들러 
+		function handleAutocomplete(model, modelInfo) { 
+			var form = document.dataForm;
+			if (modelInfo == null || $.trim(modelInfo) == "")
+				return;
+				
+			var arrModelInfo = modelInfo.split(",");
+			var arrTemp2;
+			arrTemp2 = $.trim(arrModelInfo[0]).split("|");
+		    
+			if($.trim(arrModelInfo[3]).length > 0){
+			    form.modelSfx.value   = $.trim(arrTemp2[0]);
+			    form.plant_no.value   = $.trim(arrModelInfo[1]);
+			    form.cuntry3_cd.value   = $.trim(arrModelInfo[1]);
+			    form.cut_dis.value    = $.trim(arrModelInfo[2]);
+			    if(form.cut_dis.value == "KOREA"){
+			    	form.cut_dis.value	= "DOM";
+			    }			    
+			    form.partsbk_no.value   = $.trim(arrModelInfo[3]);			    
+			}else {
+				form.modelSfx.value   = $.trim(arrTemp2[0]);
+			    form.plant_no.value   = $.trim(arrModelInfo[1]);
+			    form.cuntry3_cd.value   = $.trim(arrModelInfo[1]);
+			    form.partsbk_no.value   = $.trim(arrModelInfo[2]);			    
+			    form.cut_dis.value    = "20";
+			}			
+		}
+		
+		function handleInputChanged(val) { 
+			var form = document.dataForm;
+			form.modelSfx.value = "";
+		}
+		
+		var param = { v_suggest_cnt: 20 };
+	    var url = '/cepcna/common/autocomplete/model_detail_autocomplete_ajax.jsp';
+	    var inputId = 'modelNo';
+		loadAutocomplete(inputId, url, param, handleAutocomplete, handleInputChanged);
+	}
+	
+	function setAutocompletePartNo(){
+		// 자동완성 기능 핸들러 
+		function handleAutocomplete(model, modelInfo) { 
+		}
+		
+		function handleInputChanged(val) { 
+		}
+		
+		var param = { v_suggest_cnt: 10 };
+		var url = '/cepcna/common/autocomplete/parts_no_autocomplete_ajax.jsp';
+	    var inputId = 'partNo';
+		loadAutocomplete(inputId, url, param, handleAutocomplete, handleInputChanged);
+	}
+	
+	jQuery(function($){
+		cookieGPESLang = $.cookie("GPESLang");
+		cookieGPESLangDesc = $.cookie("GPESLangDesc");
+		
+		setAutocompleteModelNo();
+		setAutocompletePartNo();
+		
+		// popup 처리
+		var form = document.dataForm;
+		var popupSeqFormValue = form.v_popupSeqs.value;
+		var popupSeqs = popupSeqFormValue.split(',');
+		for(i=0; i<popupSeqs.length; i++) {
+	 		if(popupSeqs[i].length > 0) {
+	 			if(fncGetCookie('SYSTEM_POPUP_'+popupSeqs[i]) != 'done')
+	 			 	fncSystemPopup(popupSeqs[i]);
+			}
+	 	}
+	 	
+	 	// News popup 처리
+		var newsPopupSeqFormValue = form.v_newsPopupSeqs.value;
+		var newsPopupSeqs = newsPopupSeqFormValue.split(',');
+		for(i=0; i<newsPopupSeqs.length; i++) {
+	 		if(newsPopupSeqs[i].length > 0) {
+	 			if(fncGetCookie('ce_news_popup'+newsPopupSeqs[i]) != 'Y'){
+	 				popNewsCount++;	// 겹치는 현상을 막기 위해 이렇게 처리함. 20160531
+	 			 	fncNewsPopup(newsPopupSeqs[i]);
+	 			}
+			}
+	 	}
+
+	});
+	
+	// System 팝업 처리
+	function fncSystemPopup(seq){
+		var winPosTop 	= 30;
+		var winPosLeft = 30;		
+		var winWidth   = 300;	// init
+		var winHeight  = 400;	// init
+		var popupName = 'popup'+seq;
+		
+		var url 	= "/admin/system/a908500_popup_manager_view.jsp?seq="+seq;	
+		var winOpt	= "width="+winWidth+",height="+winHeight+",top="+winPosTop+",left="+winPosLeft;
+		window.open(url, popupName, winOpt + ',menubar=no,toolbar=no,location=no,status=no,scrollbar=no');
+		
+	}
+	
+	// News Popup 처리
+	function fncNewsPopup(seq){
+		var winPosTop 	= 30 + (popNewsCount * 30) ;
+		var winPosLeft = 30 + (popNewsCount * 30) ;		
+		var winWidth   = 400;	// init
+		var winHeight  = 500;	// init
+		var popupName = 'popup'+seq;
+		
+		var url 	= "/cepcna/popup/ce_news_popup.jsp?seq="+seq;	
+		var winOpt	= "width="+winWidth+",height="+winHeight+",top="+winPosTop+",left="+winPosLeft;
+		window.open(url, popupName, winOpt + ',menubar=no,toolbar=no,location=no,status=no,scrollbar=no');
+		
+	}
+
+	// Access Portal Open 알림 팝업 처리
+	//function fncAccessPortalPopup(){
+	//	var winPosTop	= 30;
+	//	var winPosLeft = 30;		
+	//	var winWidth   = 700;	
+	//	var winHeight  = 900;	
+	//	var popupName = 'AccessPortalNoticePopup';
+	//	
+	//		return;		
+	//	var url 	= "/cepcna/main/noticePopup.en.jsp";	
+	//	
+	//	var winOpt	= "width="+winWidth+",height="+winHeight+",top="+winPosTop+",left="+winPosLeft;
+	//	window.open(url, popupName, winOpt + ',menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
+	//}
+	//
+	//setTimeout(fncAccessPortalPopup(), 500);
+	
+/*	
+	function doobizSSO(){
+		//document.ffDecriptSSO.action="https://dw1.doosaninfracore.com/irj/portal";
+		//document.ffDecriptSSO.action="https://doobiz.doosaninfracore.com/irj/portal";
+		document.ffDecriptSSO.action="https://doobiz.hd-ce.com/irj/portal";
+		document.ffDecriptSSO.method="post";
+		document.ffDecriptSSO.target="_blank"
+		document.ffDecriptSSO.submit();
+	}
+	
+*/	
+	//팝업 닫을때 넘겨는 Suffix 명, 코드 
+	function setModelInfo(st_name, st_cd, dis_chl, partsbk_no, plant_cd) {
+		var form = document.dataForm;
+		form.modelNo.value 	= st_name;
+		form.modelSfx.value 	= st_cd;
+		form.partsbk_no.value   = partsbk_no;
+		goTextAndImageSearch(partsbk_no, st_cd, 'Y');
+	}
+	
+	// Text & Image Search 페이지로 이동
+	// 세션에 필요 정보를 넣고 해당 페이지로 이동하기위한 중간 게이트 페이지 
+	function goTextAndImageSearch(modelNo, modelSfx, fromFlag) {
+		document.location.href = "/cepcna/main/main_search_session_write.jsp?main_yn=" + fromFlag + "&v_model_no=" + modelNo + "&v_model_sfx=" + modelSfx;
+	}
+	
+	function goBulletin() {
+		var pageUrl = "";
+		
+		pageUrl = "/cepcna/info/bulletin_list_vw.jsp";
+		
+		
+		var width = 1158;
+		var height = 640;
+		var left = (screen.availWidth - width)*.5;
+		var top  = (screen.availHeight - height)*.5;
+		var strOption = "left="+left+",top="+top+",width="+width+", height="+height+", scrollbars=yes, menubar=no, toolbar=no, status=no, resizable=yes, location=no";
+		var	defaultWindow = window.open(pageUrl, "downloadWin", strOption);
+	}	
+	
+	//Model 조회 버튼클릭시 
+	function searchModelNumberKeydown(e){	
+		if(e.keyCode==13) { 
+			searchModelNumber();
+		}	  
+	}
+	//PartNo 조회 버튼클릭시 
+	function searchPartNoKeydown(e){	
+		if(e.keyCode==13) { 
+			searchPartNo();
+		}	  
+	}
+	//PartName 조회 버튼클릭시 
+	function searchPartNameKeydown(e){	
+		if(e.keyCode==13) { 
+			searchPartName();
+		}	  
+	}
+	
+	// model number로 검색 (go text&Image Search)
+	function searchModelNumber() {
+		var form = document.dataForm;
+		var modelNo = form.modelNo.value;
+		var modelSfx = form.modelSfx.value;
+		var partsBkNo = form.partsbk_no.value;
+		
+		if ($.trim(modelNo) == "" || modelNo == inputPlaceHolder[1]) {
+			alert("Please, enter the model number.");
+			return;
+		}
+		goTextAndImageSearch(partsBkNo, modelSfx, 'Y');
+	}
+	
+	
+	function searchPartNo() {
+		var data = $('#partNo').val().trim();
+		if (data=="" || data==inputPlaceHolder[2]) {
+			alert("Please enter a search term.");
+			return;
+		}
+		var url = "/cepcna/catalog/parts_books_search_pvw.jsp?v_search_type=PART_NO&v_search_value="+data.toUpperCase();
+		var width = 996;
+		var height = 632;
+		var PartsDirectSearchWindow = openDefaultWindow(url, width, height, "E020040");
+		PartsDirectSearchWindow.focus();
+	}
+	
+	function searchPartName() {
+		var data = $('#partName').val().trim();
+		if (data=="" || data==inputPlaceHolder[3]) {
+			alert("Please enter a search term.");
+			return;
+		}
+		var url = "/cepcna/catalog/parts_books_search_pvw.jsp?v_search_type=PART_NM&v_search_value="+data.toUpperCase();
+		var width = 996;
+		var height = 632;
+		var PartsDirectSearchWindow = openDefaultWindow(url, width, height, "E020040");
+		PartsDirectSearchWindow.focus();
+	}
+	
+	function searchButton() {
+		if ($(".main_tab_con_01").css("display")!="none"){
+			searchModelNumber();
+		} else if($(".main_tab_con_02").css("display")!="none"){
+			searchPartNo();
+		} else if($(".main_tab_con_03").css("display")!="none"){
+			searchPartName();
+		}
+	}
+	
+	// jsp에서 url encoding된 문자열을 decode
+	function decode(str) {
+		return unescape(str);
+	}
+	
+	// Text and Image search 이동 처리
+	function focusTextAndImageSearch(key_no,partsbk_no,plant_cd,dist_channel,largegrp_cd,fig_no,fig_sfx,fig_desc,illustfile_path,illustfile_id, fig_serial, plant_id, addr , part_no, modelSfx, standardYn, salesModelNm, cntryCdISO3, group_name) {
+		var url = "/cepcna/info/parts_info_search_session_write.jsp?";
+		var params = "key_no=" + decode(key_no) +
+			"&partsbk_no=" + decode(partsbk_no) +   
+			"&plant_no=" + decode(plant_cd) +		 
+			"&dist_channel=" + decode(dist_channel) +
+			"&largegrp_cd=" + decode(largegrp_cd) +
+			"&fig_no=" + decode(fig_no) +       
+			"&fig_sfx=" + decode(fig_sfx) +       
+			"&fig_desc=" + decode(fig_desc) +       
+			"&illustfile_path=" + decode(illustfile_path) +       
+			"&illustfile_id=" + decode(illustfile_id) +       
+			"&fig_serial=" + decode(fig_serial) +       
+			"&plant_id=" + decode(plant_id) +       
+			"&abbr=" + decode(addr) +       
+			"&part_no=" + decode(part_no) +
+			"&model_sfx=" + decode(modelSfx) +    
+			"&standard_yn=" + decode(standardYn) +
+			"&sales_model_nm=" + decode(salesModelNm) +
+			"&cntrycd_iso3=" + decode(cntryCdISO3) +
+			"&group_name=" + decode(group_name) +
+			"&action=M";
+		document.location.href = url + params;
+	}
+	
+	
+	// Parts Information 화면 호출  (My Part No)
+	function funMyPartNo(partNo) {
+	   openDefaultWindow('/cepcna/info/parts_info_vw.jsp?type=N&part_no='+ partNo , 996, 632, 'E021010');
+	}
+	
+	function update_tab_menu(num){
+		function update_tab_menu_refresh(i){
+			if (i==num){
+				$('#view_cont'+i).show();
+				$('#view_cont_more'+i).show();
+				$("#tabui li.p"+i+" a").addClass("on");	
+			} else {
+				$('#view_cont'+i).hide();
+				$('#view_cont_more'+i).hide();
+				$("#tabui li.p"+i+" a").removeClass("on");	
+			}
+		}
+		update_tab_menu_refresh(1);
+		update_tab_menu_refresh(2);
+		update_tab_menu_refresh(3);
+		update_tab_menu_refresh(4);
+	}
+	
+	
+// Quick Search 기능 추가. 2018-03-08
+
+$(function(){
+	function main_tab_menu(num){
+		function main_tab_menu_refresh(i){
+			if (i==num) {
+				$(".main_tab_con_0"+i).show();
+				$("#main_tab_menu"+i).addClass("main_tab_on");
+				$(".main_tab_con_0"+i+" input").val(inputPlaceHolder[i]);
+			} else {
+				$(".main_tab_con_0"+i).hide();	
+				$("#main_tab_menu"+i).removeClass("main_tab_on");
+			}
+		}
+		main_tab_menu_refresh(1);
+		main_tab_menu_refresh(2);
+		main_tab_menu_refresh(3);
+	} 
+	
+	// By Model Tab
+	$("#main_tab_menu1 a").click(function () {
+		main_tab_menu(1);		
+		
+		//자동완성셋팅 
+		//v_autocomplete_partsbk_nm.hide();
+	});
+	// By Serial No Tab
+	$("#main_tab_menu2 a").click(function () {
+		main_tab_menu(2);		
+		
+		//자동완성셋팅
+		//v_autocomplete_partsbk_nm.hide();
+	});
+	
+	// By Part No Tab
+	$("#main_tab_menu3 a").click(function () {
+		main_tab_menu(3);		
+		
+		//자동완성셋팅 
+		//v_autocomplete_partsbk_nm.hide();
+		//v_autocomplete_bySerialModel.hide();
+	});	
+	
+});
+
+
+
+</script>
+<!--[if IE 6]>
+<script src="/cepcna/common/js/DD_belatedPNG_0.0.8a-min.js"></script>
+<script>
+//<![CDATA[
+DD_belatedPNG.fix('.fix');
+//]]>
+</script>
+<![endif]--> 
+</head>
+<body>
+
+<!-- CE Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45363961-1', 'doosaninfracore.com');
+  ga('send', 'pageview');
+
+</script>
+
+<form name="ffDecriptSSO">
+<textarea name="j_user" style="display:none;">cby29yyLth11DgrdDGPZeQSIw5bOfUMqt8Wige7MM+Q=</textarea>
+<input type="hidden" name="j_password" value="">
+<input type="hidden" name="from" value="citrix">
+<input type="hidden" name="login_submit" value="on">
+</form>
+
+<dl id="accessibility">
+	<dt><strong class="hc">바로가기 메뉴</strong></dt>
+	<dd><a href="#main_nav" class="accessibility">메인메뉴 바로가기</a></dd>
+</dl>
+<!-- //skip navi -->
+<div id="container_m1">
+	<!-- 231116
+						container_m1 / container_m2 / container_m3 해당 클래스가 랜덤으로 선택되어 보여줘야함.
+	 -->
+	<!-- header -->
+	
+
+
+
+
+
+
+
+
+
+
+	<div id="header"  class="header_m">
+		<h1><a href="/cepcna/main/main.jsp" class="fix"><span class="hc">HD Infracore</span></a></h1>
+		<div class="utilnavi">
+			<span>EUNICE(HDI)</span>(CAR & GENERAL (KENYA) LIMITED)&nbsp;&nbsp;(2026-11-03 19:10:23)
+			
+			
+			
+			<a href="#" onclick="goLogout();">Log out</a>
+			<a href="#" onclick="fncChangePwdPop(); return false;">Change Password</a>
+			<!-- 23;08.11 ê¹ê²½í¸ ì±ì ìì²­  
+			<a href="#" onclick="fncInstallPop(); return false;">Download & Manual</a>
+			-->
+			<a href="#" onclick="fncContactUsPop(); return false;">Contact Us</a>
+			
+			<div class="gbt_lyr">
+				<a href="#"><span class="en" id="headerLanguageName" >SELECT LANGUAGE</span></a>
+				<div style="" class="mymenu fix">
+					<ul id="headerLanguage">
+					
+						<li><a href="#" class="en on" onclick="setHeaderLanguage(event, 'null', 'EN', 'English')">English</a></li>
+					
+							<script type="text/javascript">
+							$("#headerLanguageName").text("English");
+							</script>
+					
+						<li><a href="#" class="ko" onclick="setHeaderLanguage(event, 'null', 'KO', 'Korean')">Korean</a></li>
+					
+						<li><a href="#" class="zh" onclick="setHeaderLanguage(event, 'null', 'ZH', 'Chinese')">Chinese</a></li>
+					
+						<li><a href="#" class="fr" onclick="setHeaderLanguage(event, 'null', 'FR', 'French')">French</a></li>
+					
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div id="top_navi" class="fix">
+			<ul class="dropdown">
+				
+				<li>
+					<a href="#">Search Catalog</a>
+					<ul class="sub_menu" id="sub1">
+				
+						 <li><a href="/cepcna/catalog/section_group_vw.jsp">Main Fig. Search</a></li>
+				
+						 <li><a href="/cepcna/catalog/section_information_vw.jsp">Text and Image Search</a></li>
+				
+						 <li><a href="/cepcna/catalog/parts_index_vw.jsp">Parts List by Model</a></li>
+				
+						 <li><a href="#" onclick="openDefaultWindow('/cepcna/catalog/parts_books_search_pvw.jsp', 996, 632, 'E020040')">Parts Number Name Search</a></li>
+				
+					</ul>
+				</li>
+				
+				<li>
+					<a href="#">Basic Information</a>
+					<ul class="sub_menu" id="sub9">
+				
+						 <li><a href="#" onclick="openDefaultWindow('/cepcna/info/parts_info_vw.jsp', 996, 680, 'E021010')">Parts Information</a></li>
+				
+						 <li><a href="/cepcna/info/bulletin_list_vw.jsp">Parts Bulletin</a></li>
+				
+						 <li><a href="/cepcna/info/equip_info_vw.jsp">Equipment Information</a></li>
+				
+						 <li><a href="/cepcna/info/overhauled_parts_vw.jsp">Overhauled Parts</a></li>
+				
+						 <li><a href="/cepcna/info/rsp_list_vw.jsp">RSP List</a></li>
+				
+						 <li><a href="/cepcna/info/subside_material_vw.jsp">Subsidiary Material Parts</a></li>
+				
+					</ul>
+				</li>
+				
+				<li>
+					<a href="#">Shopping Cart</a>
+					<ul class="sub_menu" id="sub2">
+				
+						 <li><a href="/cepcna/shopping/shopping_list_vw.jsp">Shopping Cart</a></li>
+				
+						 <li><a href="/cepcna/shopping/shopping_list_customer.jsp">Application Shopping Cart</a></li>
+				
+						 <li><a href="/cepcna/shopping/qna_list_customer.jsp">Q&A</a></li>
+				
+					</ul>
+				</li>
+				
+				<li>
+					<a href="#">Notice</a>
+					<ul class="sub_menu" id="sub2">
+				
+						 <li><a href="/cepcna/board/news_list_vw.jsp">News</a></li>
+				
+					</ul>
+				</li>
+				
+				<li><a href="#" class="last-child" onclick="fncHistoryPop();">History</a></li>
+			</ul>
+		</div>
+	</div>	
+	<!-- //header -->
+<hr />
+	<!-- sliding_section -->
+	<div id="visual_section">
+		<div id="main_visual">
+		<!-- keyVisual area -->
+			<div id="visual_wraper">
+				<div class="top_box">
+					<div class="search_box">
+					<form name="dataForm">
+						<input type="hidden" name="v_popupSeqs" value=""><!-- 팝업공지 Seq,  ','로연 -->
+						<input type="hidden" name="v_newsPopupSeqs" value=""><!-- News 팝업공지 Seq,  ','로연 -->
+						<input type="hidden" name="modelSfx" value="" />
+						<input type="hidden" name="plant_no" value="" />
+						<input type="hidden" name="cuntry3_cd" value="" />
+						<input type="hidden" name="cut_dis" value="" />
+						<input type="hidden" name="partsbk_no" value="" />
+						
+						<fieldset class="search_m">
+							<legend class="hc">Text and Image Search</legend>
+							<ul class="main_tab_menu">
+								<li id="main_tab_menu1" class="main_tab main_tab_on"><a href="#">Model</a></li>  <!-- TODO 다국어 -->
+								<li id="main_tab_menu2" class="main_tab"><a href="#">Parts No</a></li>
+								<li id="main_tab_menu3" class="main_tab"><a href="#">Parts Name</a></li>
+							</ul>
+							<button type="button" class="sbt_m1" onclick="fncModelListPop('setModelInfo'); return false;">Model List<span> ▶</span></button>
+							<span class="itw sauto1 main_tab_con_01">
+								<input name="modelNo" id="modelNo" class="it" type="text" 
+									title="Enter the Model Name." 
+									value="Enter the Model Name." 
+									onfocus="if (this.value == inputPlaceHolder[1]) this.value=''; return true" 
+									onkeyup="searchModelNumberKeydown(event);"
+								/>
+							</span>
+							<span class="itw sauto1 main_tab_con_02" style="display:none;">
+								<input name="partNo" id="partNo" class="it" type="text" 
+									title="Enter the Part No." 
+									value="Enter the Part No." 
+									onfocus="if (this.value == inputPlaceHolder[2]) this.value=''; return true" 
+									onkeyup="searchPartNoKeydown(event);"
+								/>
+							</span>
+							<span class="itw sauto1 main_tab_con_03" style="display:none;">
+								<input name="partName" id="partName" class="it" type="text" 
+									title="Enter the Part Name." 
+									value="Enter the Part Name." 
+									onfocus="if (this.value == inputPlaceHolder[3]) this.value=''; return true" 
+									onkeyup="searchPartNameKeydown(event);"
+								/>
+							</span>
+							<button class="sbt2" tabindex="3" type="button" onclick="searchButton()"><span>Search</span></button>
+						</fieldset>
+					</form>
+					</div>
+					<div class="his_section">
+						<h3 class="hc">History</h3>
+						<a href="#" class="btn_b btn_more" onclick="fncHistoryPop();"><span class="hc">more</span></a>
+						<!-- ttype2-->
+						<div class="type_list">
+								<table cellspacing="0" cellpadding="0" summary="" class="w100 main">
+									<colgroup>
+										<col class="tw_m_model_no" />
+										<col class="tw_m_group_name" />
+										<col class="tw_m_fig_no" />
+										<col class="tw_m_fig_name" />
+									</colgroup>
+									<!-- 정렬:기본일때 -->
+									<thead>
+										<tr>	
+										<th class="model_no first_child">Model</th>	
+										<th class="group_name">Group Name</th>	
+										<th class="fig_no">Fig No</th>	
+										<th class="fig_name">Fig Name</th>	
+										</tr>
+									</thead>
+									<tbody>
+										
+										<tr onclick='focusTextAndImageSearch("", "950106-00076EF", "6000", "20", "30", "3100", "", "BOOM+-+6.245m", "%2Fdjvu%2Ffig%2F6000%2FCE%2F950106-00076EF%2F", "fig_950106-00076EF_3100.pdf", "", "HDI", "EXP", "", "CECAO", "N", "DX300LCA", "KOR", "FRONT PARTS");'>	
+										<td style="text-align:left" class="model_no" title="DX300LCA"><div>DX300LCA</div></td>	
+										<td style="text-align:left" class="group_name" style="word-break: break-all;" title="FRONT PARTS"><div>FRONT PARTS</div></td>	
+										<td class="fig_no" title="3100"><div>3100</div></td>	
+										<td style="text-align:left" class="fig_name" title="BOOM - 6.245m"><div>BOOM - 6.245m</div></td>	
+										</tr>
+										
+										<tr onclick='focusTextAndImageSearch("", "950106-00076EF", "6000", "20", "60", "6900", "", "BOOM+-+10m", "%2Fdjvu%2Ffig%2F6000%2FCE%2F950106-00076EF%2F", "fig_950106-00076EF_6900.pdf", "", "HDI", "EXP", "", "CECAO", "N", "DX300LCA", "KOR", "OPTION PARTS");'>	
+										<td style="text-align:left" class="model_no" title="DX300LCA"><div>DX300LCA</div></td>	
+										<td style="text-align:left" class="group_name" style="word-break: break-all;" title="OPTION PARTS"><div>OPTION PARTS</div></td>	
+										<td class="fig_no" title="6900"><div>6900</div></td>	
+										<td style="text-align:left" class="fig_name" title="BOOM - 10m"><div>BOOM - 10m</div></td>	
+										</tr>
+										
+										<tr onclick='focusTextAndImageSearch("", "950106-00076EF", "6000", "20", "30", "3100", "", "BOOM+-+6.245m", "%2Fdjvu%2Ffig%2F6000%2FCE%2F950106-00076EF%2F", "fig_950106-00076EF_3100.pdf", "", "HDI", "EXP", "", "CECAO", "N", "DX300LCA", "KOR", "FRONT PARTS");'>	
+										<td style="text-align:left" class="model_no" title="DX300LCA"><div>DX300LCA</div></td>	
+										<td style="text-align:left" class="group_name" style="word-break: break-all;" title="FRONT PARTS"><div>FRONT PARTS</div></td>	
+										<td class="fig_no" title="3100"><div>3100</div></td>	
+										<td style="text-align:left" class="fig_name" title="BOOM - 6.245m"><div>BOOM - 6.245m</div></td>	
+										</tr>
+										
+										
+									</tbody>
+								</table>
+						</div>			
+						<!-- //ttype2 -->
+					</div>
+				</div>
+				<div class="update_box">
+				
+				
+					<div class="article_lf">
+						<table width="100%" class="update_box_tab">
+							<tr>
+								<td style="position:relative;">
+									<h3>
+										<ul id="tabui">
+											<li class="p1" idx="1" onclick="update_tab_menu(1);"><a class="on" href="#">Model</a></li>
+											<li class="p2" idx="2" onclick="update_tab_menu(2);"><a href="#">Bulletin</a></li>
+											<!--  <li class="p3" idx="3" onclick="update_tab_menu(3);"><a href="#">Parts Note</a></li>  -->
+											<li class="p4" idx="3" onclick="update_tab_menu(4);"><a href="#">My Parts Note</a></li>
+										</ul>
+									</h3>
+									<a href="#" id="view_cont_more1" class="btn_b btn_more" onclick="fncUpdatePop();"><span class="hc">more</span></a>
+									<a href="#" id="view_cont_more2" class="btn_b btn_more" onclick="goBulletin();" style="display:none;"><span class="hc">more</span></a>
+									<a href="#" id="view_cont_more4" class="btn_b btn_more" onclick="funMyPartNo('');" style="display:none;"><span class="hc">more</span></a>
+								</td>
+							</tr>
+						</table>
+						
+						<!-- UPDATE NEWS TAB 1 -->
+						<div id="view_cont1" class="type_list">
+							<table cellspacing="0" cellpadding="0" summary="" class="w100 main">
+								<colgroup>
+									<col class="tw_m_model_no2" />
+									<col class="tw_m_group_name2" />
+									<col class="tw_m_fig_no2" />
+									<col class="tw_m_fig_name2" />
+								</colgroup>
+								<!-- 정렬:기본일때 -->
+								<thead>
+									<tr>	
+										<th class="model_no first_child">Model</th>	
+										<th class="group_name">Group Name</th>	
+										<th class="fig_no">Fig No</th>	
+										<th class="fig_name">Fig Name</th>	
+									</tr>
+								</thead>
+								<tbody>
+									
+									<tr onclick='focusTextAndImageSearch("", "950106-04031", "6050", "60", "G010", "G010-20", "", "PIPES+FOR+CHARGE+AIR+COOLER", "%2Fdjvu%2Ffig%2F6050%2FCE%2F950106-04031%2F", "fig_950106-04031_G010-20.pdf", "", "HDIN", "MOX", "", "CDTAJ", "N", "DA30+STAGE+3%2C+S%2FN+7X2501%7E%28T2F%3BT4F%3BSTAGEV%29", "NOR", "ENGINE T2F");'>	
+										<td style="text-align:left" class="model_no" title="DA30 STAGE 3, S/N 7X2501~(T2F;T4F;STAGEV)"><div>DA30 STAGE 3, S/N 7X2501~(T2F;T4F;STAGEV)</div></td>	
+										<td style="text-align:left" class="group_name" title="ENGINE T2F"><div>ENGINE T2F</div></td>	
+										<td class="fig_no" title="G010-20"><div>G010-20</div></td>	
+										<td style="text-align:left" class="fig_name" title="PIPES FOR CHARGE AIR COOLER"><div>PIPES FOR CHARGE AIR COOLER</div></td>	
+									</tr>
+									
+									<tr onclick='focusTextAndImageSearch("", "950106-04031", "6050", "60", "G011", "G011-20", "", "PIPES+FOR+CHARGE+AIR+COOLER", "%2Fdjvu%2Ffig%2F6050%2FCE%2F950106-04031%2F", "fig_950106-04031_G011-20.pdf", "", "HDIN", "MOX", "", "CDTAJ", "N", "DA30+STAGE+3%2C+S%2FN+7X2501%7E%28T2F%3BT4F%3BSTAGEV%29", "NOR", "ENGINE T4F");'>	
+										<td style="text-align:left" class="model_no" title="DA30 STAGE 3, S/N 7X2501~(T2F;T4F;STAGEV)"><div>DA30 STAGE 3, S/N 7X2501~(T2F;T4F;STAGEV)</div></td>	
+										<td style="text-align:left" class="group_name" title="ENGINE T4F"><div>ENGINE T4F</div></td>	
+										<td class="fig_no" title="G011-20"><div>G011-20</div></td>	
+										<td style="text-align:left" class="fig_name" title="PIPES FOR CHARGE AIR COOLER"><div>PIPES FOR CHARGE AIR COOLER</div></td>	
+									</tr>
+									
+									<tr onclick='focusTextAndImageSearch("", "950106-04031", "6050", "60", "G013", "G013-20", "", "PIPES+FOR+CHARGE+AIR+COOLER", "%2Fdjvu%2Ffig%2F6050%2FCE%2F950106-04031%2F", "fig_950106-04031_G013-20.pdf", "", "HDIN", "MOX", "", "CDTAJ", "N", "DA30+STAGE+3%2C+S%2FN+7X2501%7E%28T2F%3BT4F%3BSTAGEV%29", "NOR", "ENGINE Stage V");'>	
+										<td style="text-align:left" class="model_no" title="DA30 STAGE 3, S/N 7X2501~(T2F;T4F;STAGEV)"><div>DA30 STAGE 3, S/N 7X2501~(T2F;T4F;STAGEV)</div></td>	
+										<td style="text-align:left" class="group_name" title="ENGINE Stage V"><div>ENGINE Stage V</div></td>	
+										<td class="fig_no" title="G013-20"><div>G013-20</div></td>	
+										<td style="text-align:left" class="fig_name" title="PIPES FOR CHARGE AIR COOLER"><div>PIPES FOR CHARGE AIR COOLER</div></td>	
+									</tr>
+									
+									
+								</tbody>
+							</table>
+						</div>	
+						
+						<!-- UPDATE NEWS TAB 2 -->
+						<div id="view_cont2" class="type_list" style="display:none;">
+							<table cellspacing="0" cellpadding="0" summary="" class="w100 main">
+								<colgroup>
+									<col width="*" />
+									<col width="15%" />
+									<col width="20%" />
+								</colgroup>
+								<!-- 정렬:기본일때 -->
+								<thead>
+									<tr>	
+										<th>Subject</th>	
+										<th>Attach</th>	
+										<th>Reg Date</th>	
+									</tr>
+								</thead>
+								<tbody>
+									
+									<tr onclick='goBulletin()'>	
+										<td style="text-align:left" title="DL80-7 // DL85-7 // DL80TL-7 Parts Book - Europe vGEN2DD01"><div>DL80-7 // DL85-7 // DL80TL-7 Parts Book - Europe vGEN2DD01</div></td>	
+										<td style="text-align:center" title="bu_EPI26-003-13GEN2DD01EN.pdf"><div>
+											<img src="/cepcna/images/e.gif" class="ic_file">
+										</div></td>	
+										<td style="text-align:center" title="2026-10-01"><div>2026-10-01</div></td>	
+									</tr>
+									
+									<tr onclick='goBulletin()'>	
+										<td style="text-align:left" title="DL60-7 // DL65-7 // DL60TL-7 Parts Book - Europe vGEN2CC02"><div>DL60-7 // DL65-7 // DL60TL-7 Parts Book - Europe vGEN2CC02</div></td>	
+										<td style="text-align:center" title="bu_EPI26-003-12GEN2CC02EN.pdf"><div>
+											<img src="/cepcna/images/e.gif" class="ic_file">
+										</div></td>	
+										<td style="text-align:center" title="2026-09-30"><div>2026-09-30</div></td>	
+									</tr>
+									
+									<tr onclick='goBulletin()'>	
+										<td style="text-align:left" title="The difference between a 'GEN1' & 'GEN2' DL60-7,DL65-7,DL60TL-7,DL80-7,DL85-7,DL80TL-7"><div>The difference between a 'GEN1' & 'GEN2' DL60-7,DL65-7,DL60TL-7,DL80-7,DL85-7,DL80TL-7</div></td>	
+										<td style="text-align:center" title="bu_EPI26-003-11GEN1_GEN2EN.pdf"><div>
+											<img src="/cepcna/images/e.gif" class="ic_file">
+										</div></td>	
+										<td style="text-align:center" title="2026-09-21"><div>2026-09-21</div></td>	
+									</tr>
+									
+									
+								</tbody>
+							</table>
+						</div>
+
+						<!-- 24.04.18 tab 3,4 삭제 김경호 책임요청 Parts Note 관련 
+						   UPDATE NEWS TAB 3 -->
+
+						
+						<!-- UPDATE NEWS TAB 4 -->
+				 		<!-- DHLEE : 20150508  --> 
+						<div id="view_cont4" class="type_list" style="display:none;">
+							<table cellspacing="0" cellpadding="0" summary="" class="w100 main">
+								<colgroup>
+									<col width="25%" />
+									<col width="*" />
+									<col width="20%" />
+								</colgroup>
+								<!-- 정렬:기본일때 -->
+								<thead>
+									<tr>	
+										<th class="first_child part_no">Parts No</th>	
+										<th class="part_name">Parts Name</th>	
+										<th class="reg_date">Reg Date</th>	
+									</tr>
+								</thead>
+								<tbody>
+									
+									
+									<tr>	
+										<td colspan="3">no data found.</td>	
+									</tr>
+									
+								</tbody>
+							</table>
+						</div>
+
+					</div>				
+				
+				</div> <!-- update_box -->
+				
+				<div class="bottom_box">
+				</div>
+
+				
+			</div>
+		<!-- //keyVisual area -->
+		</div>
+<br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+	</div>
+	<!-- //sliding_section -->
+<hr />
+
+<!-- 비밀번호 변경 일자 도래 시 Popup (10일전부터) 시작, 각각 BG별로 별도 존재(코드)  -->
+<style type="text/css">
+#mask   { z-index:1000; position:fixed; left:0; top:0; background-color:#000; width:100%; height:100%; display:none; } 
+#pwdMsg { z-index:1001; position:absolute; top:35%; left:35%; margin:auto auto; width: 420px; background:#fff; text-align:center; padding:30px;line-height:1.6 ; display:none; }
+#pwdMsg button{ padding:4px; width:49%; margin-top:20px; }
+#pwdMsg b{ color:#c00000; }
+</style>
+	<div id="pwdMsg">
+	
+		Password expiration date is several days later.<br>
+		After the password expiration date, use of GPES is restricted.<br>
+		To avoid any inconvenience, please reset your password.<br><br>
+		
+		<b>Password Expiration Date : </b><br>
+				
+		<button onClick="fncPwdPopClose();" class="close">Close</button>
+		<button onclick="fncPwdPopClose(); fncChangePwdPop(); return false;">Change Password</button>
+	
+	</div>
+	<div id="mask"></div>
+<script>
+var pwd_change_popup = '';
+
+function fncPwdPopClose(id){
+	$('#mask, #pwdMsg').hide();
+}
+
+if(pwd_change_popup == 'Y'){
+	$('#mask').fadeTo("slow",0.5);
+    $('#pwdMsg').show();
+}
+</script>
+<!-- 비밀번호 변경 일자 도래 시 Popup (10일전부터) 끝 -->
+
+	<!-- footer -->
+		<form id="dataFotterForm" name="dataFotterForm" method="post">
+	
+	</form>
+	
+	<!-- ï¿½ï¿½ï¿½ï¿½Çªï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	<div id="footer">
+		<div class="fooer_section">
+			<strong class="copyright"><span class="hc">COPYRIGHT 2012 BY HD HYUNDAI INFRACORE. ALL RIGHT RESERVED.</span></strong>
+			<!-- <a href="#" class="download" onclick="fncInstallPop(); return false;"><span class="hc">Djvu Viewer download and Install</span></a> 
+		</div>
+	</div --> 
+	
+	
+<div class="footer_new">
+   <div class="footer_new_box">
+      <img src="/cepcna/images/main/new_copy_logo.png" alt="logo" />
+      <p>(C) 2026 HD CONSTRUCTION EQUIPMENT</p>
+   </div>
+</div>
+	<!-- //footer -->
+</div>
+
+
+</body>
+</html>
