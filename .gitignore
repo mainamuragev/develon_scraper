@@ -3,3 +3,7 @@ venv/
 __pycache__/
 *.xlsx
 *.pyc
+develon_cookies.json
+dsh_home/
+*_cookies.json
+cookies.json
